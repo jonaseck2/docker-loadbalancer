@@ -1,0 +1,43 @@
+consul:
+  command: -bootstrap
+  hostname: consul
+  image: gliderlabs/consul-server
+  ports:
+  - 8300:8300
+  - 8400:8400
+  - 8500:8500
+  - 8600:53/udp
+  environment:
+  - SERVICE_IGNORE=always
+registrator:
+  image: gliderlabs/registrator
+  hostname: registrator
+  command: -internal
+           -resync 15
+           consul://consul:8500
+  links:
+  - consul
+  volumes:
+  - /var/run/docker.sock:/tmp/docker.sock
+  environment:
+  - SERVICE_IGNORE=always
+template:
+  build: .
+  links:
+  - consul
+  ports:
+  - 8080:80
+  environment:
+  - SERVICE_IGNORE=always
+app:
+  image: tutum/hello-world
+  ports:
+  - 80
+  environment:
+  - SERVICE_NAME=demoapp
+app2:
+  image: tutum/hello-world
+  ports:
+  - 80
+  environment:
+  - SERVICE_NAME=demoapp2
